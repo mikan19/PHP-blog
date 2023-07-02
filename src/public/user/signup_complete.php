@@ -1,68 +1,41 @@
 <?php
-session_start();
+require_once __DIR__ . '/../../vendor/autoload.php';
+use App\Infrastructure\Redirect\Redirect;
+use App\Domain\ValueObject\User\UserName;
+use App\Domain\ValueObject\Email;
+use App\Domain\ValueObject\InputPassword;
+use App\UseCase\UseCaseInput\SignUpInput;
+use App\UseCase\UseCaseInteractor\SignUpInteractor;
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $name = $_POST["name"];
-    $email = $_POST["email"];
-    $password = $_POST["password"];
-    $passcheck = $_POST["passcheck"];
+$name = filter_input(INPUT_POST, 'name');
+$email = filter_input(INPUT_POST, 'email');
+$password = filter_input(INPUT_POST, 'password');
+$confirmPassword = filter_input(INPUT_POST, 'confirmPassword');
 
-    if (empty($email) || empty($password)) {
-        $_SESSION["error_message"] = "EmailかPasswordの入力がありません";
-        header("Location: signup.php");
-        exit;
-    } elseif ($password !== $passcheck) {
-        $_SESSION["error_message"] = "パスワードが一致しません";
-        header("Location: signup.php");
-        exit;
-    } else {
-        $dbUserName = 'root';
-        $dbPassword = 'password';
-        $pdo = new PDO(
-            'mysql:host=mysql; dbname=blog; charset=utf8',
-            $dbUserName,
-            $dbPassword
-        );
-
-        try {
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT); // パスワードをハッシュ化
-
-            $stmt = $pdo->prepare("INSERT INTO user (
-                name, email, password
-            ) VALUES (
-                :name, :email, :password
-            )");
-        
-            $stmt->bindParam(':name', $name, PDO::PARAM_STR);
-            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-            $stmt->bindParam(':password', $hashedPassword, PDO::PARAM_STR); // ハッシュ化されたパスワードをバインド
-            $res = $stmt->execute();
-
-            // 登録成功時の処理
-            if ($res) {
-                // 例として、登録完了後にユーザーをログインページにリダイレクトする
-                header("Location: signin.php");
-                exit;
-            } else {
-                $_SESSION["error_message"] = "エラーが発生しました。もう一度お試しください。";
-                header("Location: signup.php");
-                exit;
-            }
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000) {
-                $_SESSION["error_message"] = "すでに保存されているメールアドレスです";
-            } else {
-                $_SESSION["error_message"] = "エラーが発生しました。もう一度お試しください。";
-            }
-            header("Location: signup.php");
-            exit;
-        }
+try {
+    session_start();
+    if (empty($password) || empty($confirmPassword)) {
+        throw new Exception('パスワードを入力してください');
     }
-} else {
-    header("Location: signup.php");
-    exit;
+    if ($password !== $confirmPassword) {
+        throw new Exception('パスワードが一致しません');
+    }
+
+    $userName = new UserName($name);
+    $userEmail = new Email($email);
+    $userPassword = new InputPassword($password);
+    $useCaseInput = new SignUpInput($userName, $userEmail, $userPassword);
+    $useCase = new SignUpInteractor($useCaseInput);
+    $useCaseOutput = $useCase->handler();
+
+    if (!$useCaseOutput->isSuccess()) {
+        throw new Exception($useCaseOutput->message());
+    }
+    $_SESSION['message'] = $useCaseOutput->message();
+    Redirect::handler('./signin.php');
+} catch (Exception $e) {
+    $_SESSION['errors'][] = $e->getMessage();
+    $_SESSION['user']['name'] = $name;
+    $_SESSION['user']['email'] = $email;
+    Redirect::handler('./signup.php');
 }
-?>
-
-
-
