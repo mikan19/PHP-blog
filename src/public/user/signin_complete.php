@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($user && password_verify($password, $user["password"])) {
                 // パスワードの検証が成功した場合
                 $_SESSION["user_id"] = $user["id"]; // ユーザーIDをセッションに保存
-                header("Location: index.php");
+                header("Location: user/index.php");
                 exit;
             } else {
                 $_SESSION["error_message"] = "メールアドレスまたはパスワードが正しくありません。";
