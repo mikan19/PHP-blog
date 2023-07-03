@@ -1,44 +1,34 @@
 <?php
+require_once __DIR__ . '/../../vendor/autoload.php';
+use App\Infrastructure\Redirect\Redirect;
+use App\Domain\ValueObject\Email;
+use App\Domain\ValueObject\InputPassword;
+use App\UseCase\UseCaseInput\SignInInput;
+use App\UseCase\UseCaseInteractor\SignInInteractor;
+
 session_start();
+$email = filter_input(INPUT_POST, 'email');
+$password = filter_input(INPUT_POST, 'password');
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $email = $_POST["email"];
-    $password = $_POST["password"];
-
+try {
     if (empty($email) || empty($password)) {
-        $_SESSION["error_message"] = "パスワードとメールアドレスを入力してください";
-        header("Location: signin.php");
-        exit;
-    } else {
-        $dbUserName = 'root';
-        $dbPassword = 'password';
-
-        try {
-            $pdo = new PDO("mysql:host=mysql;dbname=blog;charset=utf8", $dbUserName, $dbPassword);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            $stmt = $pdo->prepare("SELECT id, password FROM user WHERE email = :email");
-            $stmt->bindParam(':email', $email);
-            $stmt->execute();
-
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user && password_verify($password, $user["password"])) {
-                // パスワードの検証が成功した場合
-                $_SESSION["user_id"] = $user["id"]; // ユーザーIDをセッションに保存
-                header("Location: user/index.php");
-                exit;
-            } else {
-                $_SESSION["error_message"] = "メールアドレスまたはパスワードが正しくありません。";
-                header("Location: signin.php");
-                exit;
-            }
-        } catch (PDOException $e) {
-            die("データベースへの接続に失敗しました: " . $e->getMessage());
-        }
+        throw new Exception('パスワードとメールアドレスを入力してください');
     }
+
+    $userEmail = new Email($email);
+    $inputPassword = new InputPassword($password);
+    $useCaseInput = new SignInInput($userEmail, $inputPassword);
+    $useCase = new SignInInteractor($useCaseInput);
+    $useCaseOutput = $useCase->handler();
+
+    if (!$useCaseOutput->isSuccess()) {
+        throw new Exception($useCaseOutput->message());
+    }
+    Redirect::handler('../index.php');
+} catch (Exception $e) {
+    $_SESSION['errors'][] = $e->getMessage();
+    Redirect::handler('./signin.php');
 }
-
-
+?>
 
 
