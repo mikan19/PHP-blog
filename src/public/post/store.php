@@ -1,51 +1,36 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+require_once __DIR__ . '/../../vendor/autoload.php';
+use App\Infrastructure\Redirect\Redirect;
+use App\Domain\ValueObject\Blog\Title;
+use App\Domain\ValueObject\Blog\Contents;
+use App\Domain\ValueObject\User\UserId;
+use App\UseCase\UseCaseInput\CreateInput;
+use App\UseCase\UseCaseInteractor\CreateInteractor;
 
-session_start();
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $title = $_POST["title"] ?? '';
-    $contents = $_POST["contents"] ?? '';
+$title = filter_input(INPUT_POST, 'title');
+$contents = filter_input(INPUT_POST, 'contents');
 
+try {
+    session_start();
     if (empty($title) || empty($contents)) {
-        $_SESSION["error_message"] = "タイトルか内容の入力がありません";
-        header("Location: ../create.php");
-        exit;
-    } else {
-        $dbUserName = 'root';
-        $dbPassword = 'password';
-
-        try {
-            $pdo = new PDO("mysql:host=mysql;dbname=blog;charset=utf8", $dbUserName, $dbPassword);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            
-            // ユーザーIDを取得する（ログイン時に既に生成されているものとする）
-            $stmt_user = $pdo->prepare("SELECT id FROM user WHERE id = :id");
-            $stmt_user->bindParam(':id', $_SESSION["user_id"], PDO::PARAM_INT);
-            $stmt_user->execute();
-            $user = $stmt_user->fetch(PDO::FETCH_ASSOC);
-
-
-            if ($user && $user["id"] === $_SESSION["user_id"]) {
-                // "blogs"テーブルに記事を挿入し、"id"には自動生成された値を、"user_id"にはユーザーIDを保存する
-                $stmt_blogs = $pdo->prepare("INSERT INTO blogs (user_id, title, contents) VALUES (:user_id, :title, :contents)");
-                $stmt_blogs->bindParam(':user_id', $_SESSION["user_id"]);
-                $stmt_blogs->bindParam(':title', $title);
-                $stmt_blogs->bindParam(':contents', $contents);
-                $stmt_blogs->execute();
-
-                // データベースへの保存が成功した場合
-                header("Location: ../user/mypage.php");
-                exit;
-            } else {
-              header("Location: ../create.php");  // ユーザーIDが無効な場合は、記事作成ページにリダイレクトする
-              exit;
-            }
-        } catch (PDOException $e) {
-            die("データベースへの接続に失敗しました: " . $e->getMessage());
-        }
+        throw new Exception('タイトルか内容が入力されていません');
     }
+
+    $blogtitle = new Title($title);
+    $blogcontents = new Contents($contents);
+    $useCaseInput = new CreateInput($blogtitle, $blogcontents,$userid);
+    $useCase = new CreateInteractor($useCaseInput);
+    $useCaseOutput = $useCase->handler();
+
+    if (!$useCaseOutput->isSuccess()) {
+        throw new Exception($useCaseOutput->message());
+    }
+    $_SESSION['message'] = $useCaseOutput->message();
+    Redirect::handler('./create.php');
+} catch (Exception $e) {
+    $_SESSION['errors'][] = $e->getMessage();
+    $_SESSION['blog']['title'] = $title;
+    $_SESSION['blog']['contents'] = $contents;
+    Redirect::handler('user/mypage.php');
 }
-?>
