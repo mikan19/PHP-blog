@@ -27,12 +27,9 @@ try {
     $keyword = "";
 
     // もしGETパラメータで並び順が指定されている場合、それを適用
-    if (isset($_GET['order'])) {
-        if ($_GET['order'] === 'oldest') {
-            $orderBy = "created_at ASC";
-        }
-    }
-
+    if (isset($_POST['order']) && $_POST['order'] === 'oldest') {
+      $orderBy = "deadline ASC";
+  }
     // もしGETパラメータで検索ワードが指定されている場合、それを適用
     if (isset($_GET['keyword'])) {
         $keyword = $_GET['keyword'];
