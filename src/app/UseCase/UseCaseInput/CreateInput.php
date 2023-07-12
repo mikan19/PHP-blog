@@ -4,6 +4,7 @@ namespace App\UseCase\UseCaseInput;
 require_once __DIR__ . '/../../../vendor/autoload.php';
 use App\Domain\ValueObject\Blog\Title;
 use App\Domain\ValueObject\Blog\Contents;
+use App\Domain\ValueObject\User\UserId;
 
 
 /**
@@ -59,6 +60,14 @@ final class CreateInput
     public function contents(): Contents
     {
         return $this->contents;
+    }
+
+    /**
+     * @return UserId
+     */
+    public function userid(): UserId
+    {
+        return $this->userid;
     }
 
 }

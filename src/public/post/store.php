@@ -19,7 +19,8 @@ try {
 
     $blogtitle = new Title($title);
     $blogcontents = new Contents($contents);
-    $useCaseInput = new CreateInput($blogtitle, $blogcontents,$userid);
+    $userId = new UserId($_SESSION['user']['id']);
+    $useCaseInput = new CreateInput($blogtitle, $blogcontents,$userId);
     $useCase = new CreateInteractor($useCaseInput);
     $useCaseOutput = $useCase->handler();
 
@@ -27,10 +28,10 @@ try {
         throw new Exception($useCaseOutput->message());
     }
     $_SESSION['message'] = $useCaseOutput->message();
-    Redirect::handler('./create.php');
+    Redirect::handler('../create.php');
 } catch (Exception $e) {
     $_SESSION['errors'][] = $e->getMessage();
     $_SESSION['blog']['title'] = $title;
     $_SESSION['blog']['contents'] = $contents;
-    Redirect::handler('user/mypage.php');
+    Redirect::handler('../user/mypage.php');
 }
