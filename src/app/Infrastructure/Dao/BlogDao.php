@@ -45,10 +45,10 @@ final class BlogDao
       public function create(NewBlog $blog): void
       {
         $sql = sprintf(
-            'INSERT INTO %s (title, contents, userid) VALUES (:title, :contents, :userid)',
+            'INSERT INTO %s (title, contents, user_id) VALUES (:title, :contents, :userid)',
             self::TABLE_NAME
         );
-     
+        
         $statement = $this->pdo->prepare($sql);
         $statement->bindValue(':title', $blog->title()->value(), PDO::PARAM_STR);
         $statement->bindValue(':contents', $blog->contents()->value(), PDO::PARAM_STR);

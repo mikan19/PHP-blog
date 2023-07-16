@@ -28,10 +28,10 @@ try {
         throw new Exception($useCaseOutput->message());
     }
     $_SESSION['message'] = $useCaseOutput->message();
-    Redirect::handler('../create.php');
+    Redirect::handler('../user/mypage.php');
 } catch (Exception $e) {
     $_SESSION['errors'][] = $e->getMessage();
     $_SESSION['blog']['title'] = $title;
     $_SESSION['blog']['contents'] = $contents;
-    Redirect::handler('../user/mypage.php');
+    Redirect::handler('../create.php');
 }
