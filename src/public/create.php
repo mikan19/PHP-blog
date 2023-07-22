@@ -1,12 +1,10 @@
-
 <?php
 session_start();
+$errors = $_SESSION['errors'] ?? [];
+unset($_SESSION['errors']);
 
-// エラーメッセージがセッションに保存されている場合に表示
-if (isset($_SESSION["error_message"])) {
-    echo "<p class='error'>" . $_SESSION["error_message"] . "</p>";
-    unset($_SESSION["error_message"]); // エラーメッセージを表示した後はセッションから削除
-}
+$userName = $_SESSION['user']['name'] ?? '';
+$email = $_SESSION['user']['email'] ?? '';
 ?>
 
 <!DOCTYPE html>
