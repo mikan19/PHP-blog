@@ -4,6 +4,7 @@ namespace App\Infrastructure\Dao;
 require_once __DIR__ . '/../../../vendor/autoload.php';
 use App\Domain\ValueObject\Blog\NewBlog;
 use App\Domain\ValueObject\Email;
+use App\Domain\ValueObject\Blog\BlogId;
 use \PDO;
 
 /**
@@ -56,4 +57,18 @@ final class BlogDao
         $statement->execute();
       }
 
+    /**
+     * ブログを取得する
+     * @param  NewBlog $blog
+     */
+    public function fetchBlogById(BlogId $blogId): array
+    {
+        $stmt = $this->pdo->prepare("SELECT title, created_at, contents FROM blogs WHERE id = :id");
+        $stmt->bindValue(':id', $blogId->value(), PDO::PARAM_INT);
+        $stmt->execute();
+    
+        // 記事のデータを取得
+        $blogDetail = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $blogDetail;
+    }
 }

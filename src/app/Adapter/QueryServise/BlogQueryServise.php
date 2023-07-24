@@ -3,10 +3,8 @@
 namespace App\Adapter\QueryServise;
 require_once __DIR__ . '/../../../vendor/autoload.php';
 use App\Infrastructure\Dao\BlogDao;
-use App\Domain\Entity\Blog;
 use App\Domain\ValueObject\Blog\BlogId;
-use App\Domain\ValueObject\Blog\Title;
-use App\Domain\ValueObject\Blog\Contents;
+
 
 
 final class BlogQueryServise
@@ -25,5 +23,14 @@ final class BlogQueryServise
     {
         $blogMapper = $this->blogDao->create($blog);
     }
+
+
+    public function fetchBlog(BlogId $blogId): array
+    {
+        $blogDetail = $this->blogDao->fetchBlogById($blogId);
+
+        return $blogDetail;
+    }
+
 
 }
