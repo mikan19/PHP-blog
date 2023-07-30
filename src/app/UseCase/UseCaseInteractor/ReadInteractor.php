@@ -4,9 +4,6 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 use App\Adapter\QueryServise\BlogQueryServise;
 use App\UseCase\UseCaseOutput\ReadOutput;
 use App\Domain\ValueObject\Blog\BlogId;
-use App\Domain\ValueObject\Blog\Title;
-use App\Domain\ValueObject\Blog\Contents;
-use App\Domain\ValueObject\Blog\Created_at;
 use App\Domain\Entity\Blog;
 
 /**
@@ -38,25 +35,20 @@ final class ReadInteractor
      */
     public function handler(BlogId $blogId): ReadOutput
     {
-        $blogDetail = $this->fetchBlogDetail($blogId);
-        $title = new Title($blogDetail['title']);
-        $contents = new Contents($blogDetail['contents']);
-        $created_at = new Created_at($blogDetail['created_at']);
-
-        $blog = new Blog($blogId,$title,$contents,$created_at);
+        $blog = $this->fetchBlogDetail($blogId);
 
         return new ReadOutput($blog);
     }
 
     /**
-     * ブログ詳細を取得する
+     * ブログを取得する
      *
-     * @return array
+     * @return Blog
      */
-    private function fetchBlogDetail(BlogId $blogId): array
+    private function fetchBlogDetail(BlogId $blogId): Blog
     {
-      $blogDetail = $this->blogQueryServise->fetchBlog($blogId);
+      $blog = $this->blogQueryServise->fetchBlog($blogId);
 
-      return $blogDetail;
+      return $blog;
     }
 }
