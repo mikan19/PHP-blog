@@ -10,7 +10,7 @@ final class Created_at
     /**
      * @var string
      */
-    private $created_at;
+    private $value;
 
     /**
      * コンストラクタ
