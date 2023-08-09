@@ -2,20 +2,16 @@
 
 namespace App\Domain\Entity;
 require_once __DIR__ . '/../../../vendor/autoload.php';
-use App\Domain\ValueObject\User\UserId;
 use App\Domain\ValueObject\Blog\BlogId;
 use App\Domain\ValueObject\Blog\Title;
 use App\Domain\ValueObject\Blog\Contents;
+use App\Domain\ValueObject\Blog\Created_at;
 
 /**
  * ユーザーのEntity
  */
 final class Blog
 {
-    /**
-     * @var UserId
-     */
-    private $userid;
 
     /**
      * @var BlogId
@@ -32,33 +28,31 @@ final class Blog
      */
     private $contents;
 
+    /**
+     * @var Created_at
+     */
+    private $created_at;
+
+
 
     /**
      * コンストラクタ
      *
-     * @param UserId $userid
      * @param BlogId $blogid
      * @param Title $title
      * @param Contents $contents
+     *  @param Created_at $created_at
      */
     public function __construct(
-        UserId $userid,
         BlogId $blogid,
         Title $title,
-        Contents $contents
-    ) {
-        $this->userid = $userid;
+        Contents $contents,
+        Created_at $created_at
+    ){
         $this->blogid = $blogid;
         $this->title = $title;
         $this->contents = $contents;
-    }
-
-    /**
-     * @return UserId
-     */
-    public function userid(): UserId
-    {
-        return $this->userid;
+        $this->created_at = $created_at;
     }
 
     /**
@@ -84,4 +78,13 @@ final class Blog
     {
         return $this->contents;
     }
+
+    /**
+     * @return Created_at
+     */
+    public function created_at(): Created_at
+    {
+        return $this->created_at;
+    }
+
 }
