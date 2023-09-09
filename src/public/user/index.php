@@ -11,7 +11,7 @@ try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // ログインしているユーザーのIDを取得
-    $userId = $_SESSION["user_id"];
+    $userId = $_SESSION["user"]["id"];
 
     // ユーザー名を取得するクエリを準備
     $stmt = $pdo->prepare("SELECT name FROM user WHERE id = :user_id");
